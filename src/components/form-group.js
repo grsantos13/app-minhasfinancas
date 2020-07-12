@@ -6,7 +6,7 @@ function FormGroup(props){
             <label htmlFor={props.inputName}>{props.label}</label>
             {props.children}
         </div>
-    );
+    ); 
 }
 
 export default FormGroup
