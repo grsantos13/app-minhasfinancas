@@ -1,24 +1,35 @@
 import React from 'react';
 import Card from '../components/card';
 import FormGroup from '../components/form-group';
+import UsuarioService from '../app/service/usuarioService';
+import { showErrorMessage, showSuccessMessage } from '../components/toastr'
 import { withRouter } from 'react-router-dom';
-import axios from 'axios';
+import { AuthContext } from '../main/AuthProvider';
 
 class Login extends React.Component{
 
+    constructor(){
+        super();
+        this.service = new UsuarioService();
+    }
+
     state = {
         email: '',
-        senha: ''
+        senha: '',
+        mensagemErro: null
     }
 
     entrar = () => {
-        axios.post(
-            'http://api-myfinancecontroller.herokuapp.com/api/usuarios/login',{
-                email: this.state.email,
-                senha: this.state.senha
-            }).then(response => {
-                console.log(response);
-            });
+        this.service.autenticar({
+            email: this.state.email,
+            senha: this.state.senha
+        }).then(response => {
+            showSuccessMessage("Login efetuado com sucesso!")
+            this.context.iniciarSessao(response.data);
+            this.props.history.push('/home');
+        }).catch(erro =>{
+            showErrorMessage(erro.response.data);
+        });
     };
 
     prepareSignUpForm = () => {
@@ -31,6 +42,9 @@ class Login extends React.Component{
                 <div className="col-md-6" style={ {position: 'relative', left: '300px' } }>
                     <div className="bs-docs-section">
                         <Card title="Login">
+                            <div className="row">
+                                <span>{this.state.mensagemErro}</span>
+                            </div>
                             <div className="row">
                                 <div className="col-lg-12">
                                     <div className="bs-component">
@@ -54,8 +68,14 @@ class Login extends React.Component{
                                                     placeholder="Password..." 
                                                 />
                                             </FormGroup>
-                                            <button onClick={this.entrar} className="btn btn-success">Entrar</button>
-                                            <button onClick={this.prepareSignUpForm}  className="btn btn-danger">Cadastrar</button>
+                                            <button onClick={this.entrar} 
+                                                    className="btn btn-success mr-3">
+                                                    Entrar <i className="pi pi-sign-in" style={{fontSize: '13px'}}></i>
+                                            </button>
+                                            <button onClick={this.prepareSignUpForm}  
+                                                    className="btn btn-danger">
+                                                        Cadastrar <i className="pi pi-plus" style={{fontSize: '13px'}}></i>
+                                            </button>
                                         </fieldset>
                                     </div>
                                 </div>
@@ -67,5 +87,7 @@ class Login extends React.Component{
         );
     }
 }
+
+Login.contextType = AuthContext;
 
 export default withRouter( Login )
